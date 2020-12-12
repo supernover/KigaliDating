@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "246607775176",
+    "project_id": "superfiredate",
+    "storage_bucket": "superfiredate.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246607775176:android:a125d6bdd13a09edf16cfd",
+        "android_client_info": {
+          "package_name": "com.superlover.Tereta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "246607775176-o072nvq5ttvkf462u86gj3nqefklekdo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuCy8qNLxiUREx_bD-K2fIRtMUSFVG89E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "246607775176-o072nvq5ttvkf462u86gj3nqefklekdo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
