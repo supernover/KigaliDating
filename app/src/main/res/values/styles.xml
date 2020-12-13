@@ -16,6 +16,7 @@
     <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="colorAccent">@android:color/holo_green_dark</item>
     </style>
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.NoActionBar"></style>
 
     <style name="AlertDialogCustom" parent="@android:style/Theme.Dialog">
         <item name="android:textColor">@color/colorBlack</item>

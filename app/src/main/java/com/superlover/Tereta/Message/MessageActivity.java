@@ -1,11 +1,13 @@
 package com.superlover.Tereta.Message;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,11 +24,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdCallback;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -163,6 +168,34 @@ public class MessageActivity extends AppCompatActivity {
         toolbarToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (rewardedAd.isLoaded()) {
+                    Activity activityContext = MessageActivity.this;
+                    RewardedAdCallback adCallback = new RewardedAdCallback() {
+                        @Override
+                        public void onRewardedAdOpened() {
+                            // Ad opened.
+                        }
+
+                        @Override
+                        public void onRewardedAdClosed() {
+                            // Ad closed.
+                        }
+
+                        @Override
+                        public void onUserEarnedReward(@NonNull RewardItem reward) {
+                            // User earned reward.
+                        }
+
+                        @Override
+                        public void onRewardedAdFailedToShow(AdError adError) {
+                            // Ad failed to display.
+                        }
+                    };
+                    rewardedAd.show(activityContext, adCallback);
+                } else {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                }
+
                 finish();
             }
         });
@@ -188,6 +221,33 @@ public class MessageActivity extends AppCompatActivity {
         buttonMessageSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (rewardedAd.isLoaded()) {
+                    Activity activityContext = MessageActivity.this;
+                    RewardedAdCallback adCallback = new RewardedAdCallback() {
+                        @Override
+                        public void onRewardedAdOpened() {
+                            // Ad opened.
+                        }
+
+                        @Override
+                        public void onRewardedAdClosed() {
+                            // Ad closed.
+                        }
+
+                        @Override
+                        public void onUserEarnedReward(@NonNull RewardItem reward) {
+                            // User earned reward.
+                        }
+
+                        @Override
+                        public void onRewardedAdFailedToShow(AdError adError) {
+                            // Ad failed to display.
+                        }
+                    };
+                    rewardedAd.show(activityContext, adCallback);
+                } else {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                }
 
                 String chatMessage = editTextMessageText.getText().toString();
                 if (!chatMessage.equals("")) {
@@ -211,6 +271,33 @@ public class MessageActivity extends AppCompatActivity {
         toolbarTextViewUserName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (rewardedAd.isLoaded()) {
+                    Activity activityContext = MessageActivity.this;
+                    RewardedAdCallback adCallback = new RewardedAdCallback() {
+                        @Override
+                        public void onRewardedAdOpened() {
+                            // Ad opened.
+                        }
+
+                        @Override
+                        public void onRewardedAdClosed() {
+                            // Ad closed.
+                        }
+
+                        @Override
+                        public void onUserEarnedReward(@NonNull RewardItem reward) {
+                            // User earned reward.
+                        }
+
+                        @Override
+                        public void onRewardedAdFailedToShow(AdError adError) {
+                            // Ad failed to display.
+                        }
+                    };
+                    rewardedAd.show(activityContext, adCallback);
+                } else {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                }
 
                 chatProfile();
             }
@@ -227,6 +314,33 @@ public class MessageActivity extends AppCompatActivity {
         toolbarImageViewUserImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (rewardedAd.isLoaded()) {
+                    Activity activityContext = MessageActivity.this;
+                    RewardedAdCallback adCallback = new RewardedAdCallback() {
+                        @Override
+                        public void onRewardedAdOpened() {
+                            // Ad opened.
+                        }
+
+                        @Override
+                        public void onRewardedAdClosed() {
+                            // Ad closed.
+                        }
+
+                        @Override
+                        public void onUserEarnedReward(@NonNull RewardItem reward) {
+                            // User earned reward.
+                        }
+
+                        @Override
+                        public void onRewardedAdFailedToShow(AdError adError) {
+                            // Ad failed to display.
+                        }
+                    };
+                    rewardedAd.show(activityContext, adCallback);
+                } else {
+                    Log.d("TAG", "The rewarded ad wasn't loaded yet.");
+                }
 
 
                 chatProfile();

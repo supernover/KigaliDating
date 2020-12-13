@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+import com.superlover.Tereta.MyApplication;
 import com.superlover.Tereta.R;
 import com.superlover.Tereta.Start.RemindActivity;
 import com.superlover.Tereta.Start.StartActivity;
@@ -42,12 +43,21 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private FirebaseFirestore firebaseFirestore;
+    private AppOpenAdManager appOpenAdManager;
+
+    private int numActivityRestarted = 0;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        appOpenAdManager = ((MyApplication) getApplication()).getAppOpenAdManager();
+
+
+
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarToolbar);
         setSupportActionBar(toolbar);
@@ -328,6 +338,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        numActivityRestarted++;
+
+        if (canShowAppOpenAd()) {
+            appOpenAdManager.showAdIfAvailable();
+        }
+    }
+
+    private boolean canShowAppOpenAd() {
+        return numActivityRestarted % 3 == 0;
     }
 }
 
