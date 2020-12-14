@@ -133,7 +133,7 @@ public class MessageActivity extends AppCompatActivity {
 
 
         rewardedAd = new RewardedAd(this,
-                "ca-app-pub-3940256099942544/5224354917");
+                "ca-app-pub-3063877521249388/3282360616");
 
         toolbarTextViewUserName = findViewById(R.id.toolbarTextViewUserName);
         toolbarTextViewUserStatus = findViewById(R.id.toolbarTextViewUserStatus);

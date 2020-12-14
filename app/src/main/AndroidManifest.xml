@@ -20,8 +20,10 @@
 
     <uses-permission android:name="com.superlover.Tereta.permission.C2D_MESSAGE" />
 
+
     <application
-        android:name=".Main.Application"
+        android:name=".Main.MyApplication"
+
         android:allowBackup="true"
         android:icon="@mipmap/flirt_icon"
         android:label="@string/app_name"
@@ -29,8 +31,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
-        <activity android:name=".MyApplication"
-            tools:ignore="Instantiatable" />
         <activity android:name=".Settings.NotificationActivity" />
         <activity android:name=".Start.RemindActivity" />
         <activity android:name=".Start.StartActivity" />
@@ -40,7 +40,9 @@
         <activity android:name=".Settings.AccountActivity" />
         <activity android:name=".Settings.ReportActivity" />
         <activity android:name=".Profile.ProfileEditActivity" />
-        <activity android:name=".Main.MainActivity" /> <!-- SplashActivity를 Launcher 액티비티로 설정합니다 -->
+        <activity android:name=".Main.MainActivity" />
+
+        <!-- SplashActivity를 Launcher 액티비티로 설정합니다 -->
         <activity
             android:name=".Main.SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -62,6 +64,7 @@
         <activity android:name=".Settings.PrivacyActivity" />
         <activity android:name=".Accounts.AccountsActivity" />
         <activity android:name=".Premium.PremiumActivity" />
+
 
         <service android:name=".Extra.ServiceClass" />
 

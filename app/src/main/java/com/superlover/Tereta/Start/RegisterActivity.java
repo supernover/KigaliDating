@@ -254,7 +254,7 @@ public class RegisterActivity extends AppCompatActivity implements DatePickerDia
         instance.set(2, i2);
         instance.set(5, i3);
         String format = new SimpleDateFormat("dd-MM-yyyy").format(instance.getTime());
-        if (i > 2000) {
+        if (i > 2002) {
             Toast.makeText(this, "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!", Toast.LENGTH_LONG).show();
             this.textViewRegisterBirthday.setText("");
             return;

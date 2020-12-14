@@ -20,7 +20,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-import com.superlover.Tereta.MyApplication;
 import com.superlover.Tereta.R;
 import com.superlover.Tereta.Start.RemindActivity;
 import com.superlover.Tereta.Start.StartActivity;
@@ -46,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private AppOpenAdManager appOpenAdManager;
 
     private int numActivityRestarted = 0;
+
 
 
 
