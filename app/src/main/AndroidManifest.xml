@@ -29,7 +29,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
-        <activity android:name=".MyApplication"></activity>
+        <activity android:name=".MyApplication"
+            tools:ignore="Instantiatable" />
         <activity android:name=".Settings.NotificationActivity" />
         <activity android:name=".Start.RemindActivity" />
         <activity android:name=".Start.StartActivity" />

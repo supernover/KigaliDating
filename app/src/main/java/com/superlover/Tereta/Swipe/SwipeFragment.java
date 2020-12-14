@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
@@ -94,6 +95,7 @@ public class SwipeFragment extends Fragment implements CardStackListener {
     LinearLayout linearLayoutSwipeEmptyGroup;
 
     private AdView adViewSwipe;
+    private RewardedAd rewardedAd;
 
     RippleBackground rippleSwipeAnimation;
     ImageView imageRippleSwipeUser;
@@ -102,6 +104,7 @@ public class SwipeFragment extends Fragment implements CardStackListener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.swipe_fragment, container, false);
+
 
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -144,6 +147,7 @@ public class SwipeFragment extends Fragment implements CardStackListener {
 
 
         UserRecyclerView();
+
 
 
         rippleSwipeAnimation = (RippleBackground) view.findViewById(R.id.rippleSwipeAnimation);
