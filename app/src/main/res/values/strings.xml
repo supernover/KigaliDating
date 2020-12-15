@@ -48,8 +48,10 @@
     <string name="_60">60+</string>
     <string name="gender">gender</string>
 
-    <string name="facebook_app_id">331875347481475</string>
-    <string name="fb_login_protocol_scheme">fb331875347481475</string>
+
+    <string name="facebook_app_id">214432813500536</string>
+    <string name="fb_login_protocol_scheme">fb214432813500536</string>
+
 
     <string name="admob_banner_ad_unit_id">ca-app-pub-3063877521249388/5099372140</string>
     <string name="admob_interstitial_ad_unit_id">ca-app-pub-3063877521249388/3282360616</string>
