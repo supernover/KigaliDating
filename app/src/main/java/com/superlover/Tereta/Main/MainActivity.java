@@ -42,9 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private FirebaseFirestore firebaseFirestore;
-    private AppOpenAdManager appOpenAdManager;
-
     private int numActivityRestarted = 0;
+    private AppOpenAdManager appOpenAdManager;
 
 
 
