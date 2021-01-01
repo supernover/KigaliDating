@@ -33,6 +33,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AdMobOpenAdKotlin"
         tools:replace="android:icon">
+        <activity android:name="android.app.Application"/>
         <activity android:name=".Settings.NotificationActivity" />
         <activity android:name=".Start.RemindActivity" />
         <activity android:name=".Start.StartActivity" />
