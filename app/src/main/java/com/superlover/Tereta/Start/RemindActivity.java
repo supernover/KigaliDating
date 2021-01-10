@@ -24,17 +24,26 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.PermissionChecker;
 import androidx.fragment.app.DialogFragment;
 
+import com.facebook.appevents.UserDataStore;
+import com.facebook.internal.ServerProtocol;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.net.HttpHeaders;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -54,396 +63,313 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class RemindActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
-
-    String string_city;
-    String string_state;
-    String string_country;
-    String string_location;
+public class RemindActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    private static final long FASTEST_INTERVAL = 1000;
+    private static final long INTERVAL = 1000;
+    AuthCredential authCredential;
+    private Button btnRemind;
+    private String currentUser;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore firebaseFirestore;
+    private FirebaseUser firebaseUser;
+    FusedLocationProviderApi fusedLocationProviderApi;
+    GoogleApiClient googleApiClient;
+    private Location location;
+    LocationManager locationManager;
+    LocationRequest locationRequest;
+    ProgressDialog progressDialog;
+    /* access modifiers changed from: private */
+    public RadioButton radioButtonRemindGender;
+    private RadioGroup radioGroupRemindGender;
     String stringLatitude;
     String stringLongitude;
     String stringLooking;
+    String string_city;
+    String string_country;
+    String string_location;
+    String string_state;
+    /* access modifiers changed from: private */
+    public TextView textViewRemindBirthday;
 
-    AuthCredential authCredential;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private FirebaseFirestore firebaseFirestore;
-    private String currentUser;
-    private String stringEmail;
-    private String stringEpass;
-    private Button btnRemind;
-    private EditText editTextRemindPassword;
-    private RadioGroup radioGroupRemindGender;
-    private RadioButton radioButtonRemindGender;
-    private TextView textViewRemindBirthday;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationRequest locationRequest;
-    LocationManager locationManager;
-    ProgressDialog dialog;
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+    }
 
+    public void onConnectionSuspended(int i) {
+    }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.remind_activity);
+    /* access modifiers changed from: protected */
+    public void stopLocationUpdates() {
+    }
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseFirestore = FirebaseFirestore.getInstance();
-
-        btnRemind = (Button) findViewById(R.id.btnRemind);
-        editTextRemindPassword = (EditText) findViewById(R.id.editTextRemindPassword);
-
-        textViewRemindBirthday = (TextView) findViewById(R.id.textViewRemindBirthday);
-
-        radioGroupRemindGender = findViewById(R.id.radioGroupRemindGender);
-
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
+    /* access modifiers changed from: protected */
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView((int) R.layout.remind_activity);
+        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.firebaseUser = this.firebaseAuth.getCurrentUser();
+        this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.currentUser = this.firebaseUser.getUid();
+        this.btnRemind = (Button) findViewById(R.id.btnRemind);
+        this.textViewRemindBirthday = (TextView) findViewById(R.id.textViewRemindBirthday);
+        this.radioGroupRemindGender = (RadioGroup) findViewById(R.id.radioGroupRemindGender);
+        this.fusedLocationProviderApi = LocationServices.FusedLocationApi;
+        this.googleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+        this.locationManager = (LocationManager) getSystemService(FirebaseAnalytics.Param.LOCATION);
         LocationPremissionCheck();
         GooglePlayServiceCheck();
         GPSLocationServiceCheck();
-
-        textViewRemindBirthday.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment datePicker = new DateClass();
-                datePicker.show(getSupportFragmentManager(), "Date Picker");
-
+        GoogleLocationRequest();
+        this.textViewRemindBirthday.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                new DateClass().show(RemindActivity.this.getSupportFragmentManager(), "Date Picker");
             }
         });
-
-        btnRemind.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (radioButtonRemindGender != null) {
-                    if (string_city != null && !string_city.equals("city") &&
-                            string_state != null && !string_state.equals("state") &&
-                            string_country != null && !string_country.equals("country")) {
-
-                        final String stringGender = radioButtonRemindGender.getText().toString();
-                        final String stringBirthday = textViewRemindBirthday.getText().toString();
-
-                        if (stringGender.equals("Male")) {
-                            stringLooking = "Woman";
-                        } else {
-                            stringLooking = "Man";
-                        }
-
-                        if (!TextUtils.isEmpty(stringGender) ||
-                                !TextUtils.isEmpty(stringBirthday)) {
-
-                            if (!stringBirthday.equals("")) {
-
-
-                                dialog = new ProgressDialog(RemindActivity.this);
-                                dialog.setTitle("Please Wait");
-                                dialog.setMessage("Setting Profile...");
-                                dialog.setCancelable(false);
-                                dialog.show();
-
-                                ProfileUpdate(stringGender, stringBirthday);
-
-                            } else {
-
-                                Toast.makeText(RemindActivity.this, "Please Fill in all the details to proceed!", Toast.LENGTH_SHORT).show();
-
-                            }
-
-
-                        } else {
-
-                            Toast.makeText(RemindActivity.this, "Please Fill in all the details to proceed!", Toast.LENGTH_SHORT).show();
-
-                        }
-
-                    } else {
-                        Toast.makeText(RemindActivity.this, "Please turn on Location service to continue.", Toast.LENGTH_SHORT).show();
-
-                    }
-
+        this.btnRemind.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (RemindActivity.this.radioButtonRemindGender == null) {
+                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", 0).show();
+                } else if (RemindActivity.this.string_city == null || RemindActivity.this.string_city.equals("city") || RemindActivity.this.string_state == null || RemindActivity.this.string_state.equals(ServerProtocol.DIALOG_PARAM_STATE) || RemindActivity.this.string_country == null || RemindActivity.this.string_country.equals(UserDataStore.COUNTRY)) {
+                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", 0).show();
                 } else {
-                    Toast.makeText(RemindActivity.this, "Please Fill in all the details to proceed!", Toast.LENGTH_SHORT).show();
-
+                    String charSequence = RemindActivity.this.radioButtonRemindGender.getText().toString();
+                    String charSequence2 = RemindActivity.this.textViewRemindBirthday.getText().toString();
+                    if (charSequence.equals("Male")) {
+                        RemindActivity.this.stringLooking = "Woman";
+                    } else {
+                        RemindActivity.this.stringLooking = "Man";
+                    }
+                    if (TextUtils.isEmpty(charSequence) && TextUtils.isEmpty(charSequence2)) {
+                        Toast.makeText(RemindActivity.this, "Please Fill in all the details to proceed!", Toast.LENGTH_SHORT).show();
+                    } else if (!charSequence2.equals("")) {
+                        RemindActivity remindActivity = RemindActivity.this;
+                        remindActivity.progressDialog = new ProgressDialog(remindActivity);
+                        RemindActivity.this.progressDialog.setTitle("Please Wait");
+                        RemindActivity.this.progressDialog.setMessage("Setting Profile...");
+                        RemindActivity.this.progressDialog.setCancelable(false);
+                        RemindActivity.this.progressDialog.show();
+                        RemindActivity.this.ProfileUpdate(charSequence, charSequence2);
+                    } else {
+                        Toast.makeText(RemindActivity.this, "Please Fill in all the details to proceed!", Toast.LENGTH_SHORT).show();
+                    }
                 }
-
             }
         });
-
     }
-
-
 
     public void radioButtonRemindGender(View view) {
-        int radioId = radioGroupRemindGender.getCheckedRadioButtonId();
-        radioButtonRemindGender = findViewById(radioId);
-
+        this.radioButtonRemindGender = (RadioButton) findViewById(this.radioGroupRemindGender.getCheckedRadioButtonId());
     }
 
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY");
-        String strDate = format.format(calendar.getTime());
-
-
-        if (year > 2000) {
-            Toast.makeText(this,
-                    "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!",
-                    Toast.LENGTH_LONG).show();
-            textViewRemindBirthday.setText("");
-
-        } else {
-            textViewRemindBirthday.setText(strDate);
+    public void onDateSet(DatePicker datePicker, int i, int i2, int i3) {
+        Calendar instance = Calendar.getInstance();
+        instance.set(1, i);
+        instance.set(2, i2);
+        instance.set(5, i3);
+        String format = new SimpleDateFormat("dd-MM-yyyy").format(instance.getTime());
+        if (i > 2000) {
+            Toast.makeText(this, "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!", Toast.LENGTH_LONG).show();
+            this.textViewRemindBirthday.setText("");
+            return;
         }
-
+        this.textViewRemindBirthday.setText(format);
     }
 
-
-    private String AgeUser(String stringDateUser) {
-
-        String[] arrayDateUser = stringDateUser.split("-");
-        int day = Integer.valueOf(arrayDateUser[0]);
-        int month = Integer.valueOf(arrayDateUser[1]);
-        int year = Integer.valueOf(arrayDateUser[2]);
-
-
-        Calendar dob = Calendar.getInstance();
-        Calendar today = Calendar.getInstance();
-
-        dob.set(year, month, day);
-
-        int age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
-
-        if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
-            age--;
+    private String AgeUser(String str) {
+        String[] split = str.split("-");
+        int intValue = Integer.valueOf(split[0]).intValue();
+        int intValue2 = Integer.valueOf(split[1]).intValue();
+        int intValue3 = Integer.valueOf(split[2]).intValue();
+        Calendar instance = Calendar.getInstance();
+        Calendar instance2 = Calendar.getInstance();
+        instance.set(intValue3, intValue2, intValue);
+        int i = instance2.get(1) - instance.get(1);
+        if (instance2.get(6) < instance.get(6)) {
+            i--;
         }
-
-        Integer ageInt = new Integer(age);
-        String ageS = ageInt.toString();
-
-        return ageS;
+        return new Integer(i).toString();
     }
 
-    private void ProfileUpdate(String stringGender, String stringBirthday) {
-
-        Map<String, Object> userProfile = new HashMap<>();
-        userProfile.put("user_gender", stringGender);
-        userProfile.put("user_birthday", stringBirthday);
-        userProfile.put("user_birthage", AgeUser(stringBirthday));
-        userProfile.put("user_city", string_city);
-        userProfile.put("user_state", string_state);
-        userProfile.put("user_country", string_country);
-        userProfile.put("user_location", string_location);
-        userProfile.put("user_looking", stringLooking);
-        userProfile.put("user_latitude", stringLatitude);
-        userProfile.put("user_longitude", stringLongitude);
-        userProfile.put("user_dummy", "no");
-
-        firebaseFirestore.collection("users")
-                .document(currentUser)
-                .update(userProfile)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-
-                            Intent intent = new Intent(RemindActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-
-                            dialog.dismiss();
-
-                        } else {
-
-                            dialog.dismiss();
-                        }
-                    }
-                });
-
-    }
-
-
-    private void LocationPremissionCheck() {
-
-        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
-        String rationale = "Please provide location permission so that you can ...";
-        Permissions.Options options = new Permissions.Options()
-                .setRationaleDialogTitle("Location Permission")
-                .setSettingsDialogTitle("Warning");
-        Permissions.check(this/*context*/, permissions, null/*rationale*/, null/*options*/, new PermissionHandler() {
-            @Override
-            public void onGranted() {
-                LocationRequest();
-
-            }
-
-            @Override
-            public void onDenied(Context context, ArrayList<String> deniedPermissions) {
-                super.onDenied(context, deniedPermissions);
-                LocationPremissionCheck();
+    /* access modifiers changed from: private */
+    public void ProfileUpdate(String str, String str2) {
+        HashMap hashMap = new HashMap();
+        hashMap.put("user_gender", str);
+        hashMap.put("user_birthday", str2);
+        hashMap.put("user_birthage", AgeUser(str2));
+        hashMap.put("user_city", this.string_city);
+        hashMap.put("user_state", this.string_state);
+        hashMap.put("user_country", this.string_country);
+        hashMap.put("user_location", this.string_location);
+        hashMap.put("user_looking", this.stringLooking);
+        hashMap.put("user_latitude", this.stringLatitude);
+        hashMap.put("user_longitude", this.stringLongitude);
+        hashMap.put("user_dummy", "no");
+        this.firebaseFirestore.collection("users").document(this.currentUser).update(hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            public void onComplete(Task<Void> task) {
+                if (task.isSuccessful()) {
+                    RemindActivity.this.startActivity(new Intent(RemindActivity.this, MainActivity.class));
+                    RemindActivity.this.finish();
+                    RemindActivity.this.progressDialog.dismiss();
+                    return;
+                }
+                RemindActivity.this.progressDialog.dismiss();
             }
         });
     }
 
-
-    private void LocationRetreive(Double locationLatitude, Double locationLongitude) {
-        try {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addresses = geocoder.getFromLocation(locationLatitude, locationLongitude, 1);
-            if (addresses != null && addresses.size() > 0) {
-                string_city = addresses.get(0).getLocality();
-                string_state = addresses.get(0).getAdminArea();
-                string_country = addresses.get(0).getCountryName();
-                string_location = addresses.get(0).getAddressLine(0);
-
-
-                if (string_country == null) {
-                    if (string_state != null) {
-                        string_country = string_state;
-                    } else if (string_city != null) {
-                        string_country = string_city;
-                    } else {
-                        string_country = "null";
-                    }
-                }
-                if (string_city == null) {
-                    if (string_state != null) {
-                        string_city = string_state;
-                    } else {
-                        string_city = string_country;
-                    }
-                }
-                if (string_state == null) {
-                    if (string_city != null) {
-                        string_state = string_city;
-                    } else {
-                        string_state = string_country;
-                    }
-                }
-                if (string_location == null) {
-                    string_location = "Null";
-                }
-
-
+    /* access modifiers changed from: private */
+    public void LocationPremissionCheck() {
+        new Permissions.Options().setRationaleDialogTitle("Location Permission").setSettingsDialogTitle(HttpHeaders.WARNING);
+        Permissions.check((Context) this, new String[]{"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}, (String) null, (Permissions.Options) null, (PermissionHandler) new PermissionHandler() {
+            public void onGranted() {
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(RemindActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-        }
-    }
 
-    private void LocationRequest() {
-
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                PermissionChecker.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                        PermissionChecker.PERMISSION_GRANTED) {
-
-
-            fusedLocationProviderClient = new FusedLocationProviderClient(this);
-
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-
-                    if (location != null) {
-
-                        Double locationLatitude = location.getLatitude();
-                        Double locationLongitude = location.getLongitude();
-
-                        stringLatitude = locationLatitude.toString();
-                        stringLongitude = locationLongitude.toString();
-
-                        if (!stringLatitude.equals("0.0") && !stringLongitude.equals("0.0")) {
-
-                            LocationRetreive(locationLatitude, locationLongitude);
-
-                        } else {
-
-                            Toast.makeText(RemindActivity.this,
-                                    "Please turn on any GPS or location service and restart to use the app", Toast.LENGTH_SHORT).show();
-
-                        }
-
-
-                    } else {
-                        Toast.makeText(RemindActivity.this,
-                                "Please turn on any GPS or location service and restart to use the app", Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-
-            });
-
-
-        } else {
-
-            LocationPremissionCheck();
-
-        }
+            public void onDenied(Context context, ArrayList<String> arrayList) {
+                super.onDenied(context, arrayList);
+                RemindActivity.this.LocationPremissionCheck();
+            }
+        });
     }
 
     public boolean GooglePlayServiceCheck() {
-        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
-        int status = googleApiAvailability.isGooglePlayServicesAvailable(this);
-        if (status != ConnectionResult.SUCCESS) {
-            if (googleApiAvailability.isUserResolvableError(status)) {
-                googleApiAvailability.getErrorDialog(this, status, 2404).show();
-            }
+        GoogleApiAvailability instance = GoogleApiAvailability.getInstance();
+        int isGooglePlayServicesAvailable = instance.isGooglePlayServicesAvailable(this);
+        if (isGooglePlayServicesAvailable == 0) {
+            return true;
+        }
+        if (!instance.isUserResolvableError(isGooglePlayServicesAvailable)) {
             return false;
         }
-        return true;
+        instance.getErrorDialog(this, isGooglePlayServicesAvailable, 2405).show();
+        return false;
     }
 
-
     private void GPSLocationServiceCheck() {
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Your GPS seems to be disabled, enable it to use this app?")
-                    .setCancelable(false)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            dialog.cancel();
-                            Intent intent = new Intent(RemindActivity.this, StartActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                            finish();
-
-                        }
-                    });
-            final AlertDialog alert = builder.create();
-            alert.show();
+        if (!this.locationManager.isProviderEnabled("gps")) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage((CharSequence) "Your GPS seems to be disabled, enable it to use the app?").setCancelable(false).setPositiveButton((CharSequence) "Yes", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    RemindActivity.this.startActivity(new Intent("android.settings.LOCATION_SOURCE_SETTINGS"));
+                }
+            }).setNegativeButton((CharSequence) "No", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                    Intent intent = new Intent(RemindActivity.this, StartActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    RemindActivity.this.startActivity(intent);
+                    RemindActivity.this.finish();
+                }
+            });
+            builder.create().show();
         }
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-
-        GPSLocationServiceCheck();
-
-
+    /* access modifiers changed from: protected */
+    public void GoogleLocationRequest() {
+        this.locationRequest = new LocationRequest();
+        this.locationRequest.setInterval(1000);
+        this.locationRequest.setFastestInterval(1000);
+        this.locationRequest.setPriority(100);
     }
 
+    private void GoogleLocationRetreive(Double d, Double d2) {
+        try {
+            List<Address> fromLocation = new Geocoder(this, Locale.getDefault()).getFromLocation(d.doubleValue(), d2.doubleValue(), 1);
+            if (fromLocation != null && fromLocation.size() > 0) {
+                this.string_city = fromLocation.get(0).getLocality();
+                this.string_state = fromLocation.get(0).getAdminArea();
+                this.string_country = fromLocation.get(0).getCountryName();
+                this.string_location = fromLocation.get(0).getAddressLine(0);
+                if (this.string_country == null) {
+                    if (this.string_state != null) {
+                        this.string_country = this.string_state;
+                    } else if (this.string_city != null) {
+                        this.string_country = this.string_city;
+                    } else {
+                        this.string_country = "unknown";
+                    }
+                }
+                if (this.string_city == null) {
+                    if (this.string_state != null) {
+                        this.string_city = this.string_state;
+                    } else {
+                        this.string_city = this.string_country;
+                    }
+                }
+                if (this.string_state == null) {
+                    if (this.string_city != null) {
+                        this.string_state = this.string_city;
+                    } else {
+                        this.string_state = this.string_country;
+                    }
+                }
+                if (this.string_location == null) {
+                    this.string_location = "unknown";
+                }
+            }
+            this.stringLatitude = d.toString();
+            this.stringLongitude = d2.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Location unable to detect", Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    public void onConnected(Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, "android.permission.ACCESS_FINE_LOCATION") == 0 || ActivityCompat.checkSelfPermission(this, "android.permission.ACCESS_COARSE_LOCATION") == 0) {
+            this.location = LocationServices.FusedLocationApi.getLastLocation(this.googleApiClient);
+            LocationRecheck(this.location);
+            startLocationUpdates();
+        }
+    }
 
+    /* access modifiers changed from: protected */
+    public void startLocationUpdates() {
+        if (!(ActivityCompat.checkSelfPermission(this, "android.permission.ACCESS_FINE_LOCATION") == 0 || ActivityCompat.checkSelfPermission(this, "android.permission.ACCESS_COARSE_LOCATION") == 0)) {
+            Toast.makeText(this, "Please provide location permission to use the app!", Toast.LENGTH_SHORT).show();
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(this.googleApiClient, this.locationRequest, (LocationListener) this);
+    }
 
-    @Override
+    public void onLocationChanged(Location location2) {
+        if (location2 != null) {
+            LocationRecheck(location2);
+        }
+    }
+
+    private void LocationRecheck(Location location2) {
+        if (location2 == null) {
+            Toast.makeText(this, "Please turn on any GPS or location service to use the app", Toast.LENGTH_SHORT).show();
+        } else if (location2.getLatitude() == 0.0d || location2.getLongitude() == 0.0d) {
+            Toast.makeText(this, "Please turn on any GPS or location service to use the app", Toast.LENGTH_SHORT).show();
+        } else {
+            GoogleLocationRetreive(Double.valueOf(location2.getLatitude()), Double.valueOf(location2.getLongitude()));
+        }
+    }
+
+    /* access modifiers changed from: protected */
+    public void onStart() {
+        super.onStart();
+        this.googleApiClient.connect();
+    }
+
+    public void onStop() {
+        super.onStop();
+        this.googleApiClient.disconnect();
+    }
+
+    /* access modifiers changed from: protected */
+    public void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    public void onResume() {
+        super.onResume();
+        if (this.googleApiClient.isConnected()) {
+            startLocationUpdates();
+        }
+    }
+
     public void onBackPressed() {
         moveTaskToBack(true);
     }
