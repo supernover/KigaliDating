@@ -21,77 +21,73 @@ import com.superlover.Tereta.R;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private FirebaseAuth userAuth;
-    private EditText loginEmail;
-    private EditText loginPass;
-
     private Button btnLoginPageLogin;
     private Button btnLoginPageRegister;
-
+    private Button btnLoginPageReset;
     ProgressDialog dialog;
+    /* access modifiers changed from: private */
+    public EditText loginEmail;
+    /* access modifiers changed from: private */
+    public EditText loginPass;
+    /* access modifiers changed from: private */
+    public FirebaseAuth userAuth;
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.login_activity);
-
-        userAuth = FirebaseAuth.getInstance();
-
-        loginEmail = (EditText) findViewById(R.id.loginEmailText);
-        loginPass = (EditText) findViewById(R.id.loginPassText);
-        btnLoginPageLogin = (Button) findViewById(R.id.btnLoginPageLogin);
-        btnLoginPageRegister = findViewById(R.id.btnLoginPageRegister);
-
-
-        dialog = new ProgressDialog(LoginActivity.this);
-        dialog.setMessage("Loading...");
-        dialog.setCancelable(false);
-
-        btnLoginPageLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String userEmail = loginEmail.getText().toString();
-                String userPass = loginPass.getText().toString();
-
-                if (!TextUtils.isEmpty(userEmail) && !TextUtils.isEmpty((userPass))) {
-
-                    dialog.show();
-
-                    userAuth.signInWithEmailAndPassword(userEmail, userPass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                sendToMain();
-                                dialog.dismiss();
-                            } else {
-                                String errorMessage = task.getException().getMessage();
-                                Toast.makeText(LoginActivity.this, "Error : " + errorMessage, Toast.LENGTH_LONG).show();
-                                dialog.dismiss();
-                            }
-                        }
-                    });
-                } else {
+    /* access modifiers changed from: protected */
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView((int) R.layout.login_activity);
+        this.userAuth = FirebaseAuth.getInstance();
+        this.loginEmail = (EditText) findViewById(R.id.loginEmailText);
+        this.loginPass = (EditText) findViewById(R.id.loginPassText);
+        this.btnLoginPageLogin = (Button) findViewById(R.id.btnLoginPageLogin);
+        this.btnLoginPageRegister = (Button) findViewById(R.id.btnLoginPageRegister);
+        this.btnLoginPageReset = (Button) findViewById(R.id.btnLoginPageReset);
+        this.dialog = new ProgressDialog(this);
+        this.dialog.setMessage("Loading...");
+        this.dialog.setCancelable(false);
+        this.btnLoginPageLogin.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                String obj = LoginActivity.this.loginEmail.getText().toString();
+                String obj2 = LoginActivity.this.loginPass.getText().toString();
+                if (TextUtils.isEmpty(obj) || TextUtils.isEmpty(obj2)) {
                     Toast.makeText(LoginActivity.this, "Please enter your email and password!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                LoginActivity.this.dialog.show();
+                LoginActivity.this.userAuth.signInWithEmailAndPassword(obj, obj2).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    public void onComplete(Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            LoginActivity.this.sendToMain();
+                            LoginActivity.this.dialog.dismiss();
+                            return;
+                        }
+                        String message = task.getException().getMessage();
+                        LoginActivity loginActivity = LoginActivity.this;
+                        Toast.makeText(loginActivity, "Error : " + message, Toast.LENGTH_LONG).show();
+                        LoginActivity.this.dialog.dismiss();
+                    }
+                });
             }
         });
-
-        btnLoginPageRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        this.btnLoginPageRegister.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                LoginActivity.this.startActivity(intent);
+            }
+        });
+        this.btnLoginPageReset.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent intent = new Intent(LoginActivity.this, ResetActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                LoginActivity.this.startActivity(intent);
             }
         });
     }
 
-
-    private void sendToMain() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
+    /* access modifiers changed from: private */
+    public void sendToMain() {
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 }

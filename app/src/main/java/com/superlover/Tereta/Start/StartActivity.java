@@ -1,5 +1,6 @@
 package com.superlover.Tereta.Start;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,11 +34,14 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.squareup.picasso.Picasso;
+import com.superlover.Tereta.Legals.PolicyActivity;
+import com.superlover.Tereta.Legals.TermsActivity;
 import com.superlover.Tereta.Main.MainActivity;
 import com.superlover.Tereta.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,230 +49,164 @@ import javax.annotation.Nullable;
 
 public class StartActivity extends AppCompatActivity {
 
-    Button buttonStartFacebook;
-    Button buttonStartEmail;
-
-    ImageView imageStart;
-
-    ProgressDialog dialog;
-
-    private CallbackManager mCallbackManager;
-
-    private FirebaseAuth firebaseAuth;
-    private FirebaseFirestore firebaseFirestore;
-    private FirebaseUser firebaseUser;
-
     ArrayList<String> arrayListFacebook;
+    Button buttonStartEmail;
+    Button buttonStartFacebook;
+    ProgressDialog dialog;
+    private FirebaseAuth firebaseAuth;
+    /* access modifiers changed from: private */
+    public FirebaseFirestore firebaseFirestore;
+    private FirebaseUser firebaseUser;
+    ImageView imageStart;
+    private CallbackManager mCallbackManager;
+    TextView textViewStartPolicy;
+    TextView textViewStartTerms;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+    /* access modifiers changed from: protected */
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        if (Build.VERSION.SDK_INT >= 19) {
+            getWindow().setFlags(512, 512);
         }
-
-        setContentView(R.layout.start_activity);
-
-        arrayListFacebook = new ArrayList<>();
-
-        firebaseFirestore = FirebaseFirestore.getInstance();
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-
-        buttonStartFacebook = findViewById(R.id.buttonStartFacebook);
-        buttonStartEmail = findViewById(R.id.buttonStartEmail);
-        imageStart = findViewById(R.id.imageStart);
-
-
-        firebaseFirestore.collection("admin")
-                .document("settings")
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                        if(documentSnapshot!=null){
-                            String start_image = documentSnapshot.getString("start_image");
-                            Picasso.get().load(start_image).placeholder(R.drawable.gradient).into(imageStart);
-                        }
-                    }
-                });
-
-        buttonStartEmail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(StartActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
-        });
-
-
-
-
-        mCallbackManager = CallbackManager.Factory.create();
-        buttonStartFacebook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                FacebookSignIn();
-
-                dialog = new ProgressDialog(StartActivity.this);
-                dialog.setMessage("Loading...");
-                dialog.setCancelable(false);
-                dialog.show();
-
-            }
-        });
-
-
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
-
-    }
-
-
-    private void FacebookSignIn() {
-
-        LoginManager.getInstance().logInWithReadPermissions(StartActivity.this, Arrays.asList("email", "public_profile"));
-        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        // Toast.makeText(StartActivity.this, "Login Sucsess!", Toast.LENGTH_SHORT).show();
-                        handleFacebookAccessToken(loginResult.getAccessToken());
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        // Toast.makeText(StartActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-
-                    }
-
-                    @Override
-                    public void onError(FacebookException error) {
-                        // Toast.makeText(StartActivity.this, "Login Failed!", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-
-                    }
+        setContentView((int) R.layout.start_activity);
+        this.arrayListFacebook = new ArrayList<>();
+        this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.firebaseUser = this.firebaseAuth.getCurrentUser();
+        this.buttonStartFacebook = (Button) findViewById(R.id.buttonStartFacebook);
+        this.buttonStartEmail = (Button) findViewById(R.id.buttonStartEmail);
+        this.imageStart = (ImageView) findViewById(R.id.imageStart);
+        this.textViewStartTerms = (TextView) findViewById(R.id.textViewStartTerms);
+        this.textViewStartPolicy = (TextView) findViewById(R.id.textViewStartPolicy);
+        this.firebaseFirestore.collection("admin").document("settings").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException firebaseFirestoreException) {
+                if (documentSnapshot != null) {
+                    Picasso.get().load(documentSnapshot.getString("start_image")).placeholder((int) R.drawable.gradient).into(StartActivity.this.imageStart);
                 }
-
-
-        );
-
+            }
+        });
+        this.buttonStartEmail.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                StartActivity.this.startActivity(new Intent(StartActivity.this, LoginActivity.class));
+            }
+        });
+        this.textViewStartTerms.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                StartActivity.this.startActivity(new Intent(StartActivity.this, TermsActivity.class));
+            }
+        });
+        this.textViewStartPolicy.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                StartActivity.this.startActivity(new Intent(StartActivity.this, PolicyActivity.class));
+            }
+        });
+        this.mCallbackManager = CallbackManager.Factory.create();
+        this.buttonStartFacebook.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                StartActivity.this.FacebookSignIn();
+                StartActivity startActivity = StartActivity.this;
+                startActivity.dialog = new ProgressDialog(startActivity);
+                StartActivity.this.dialog.setMessage("Loading...");
+                StartActivity.this.dialog.setCancelable(false);
+                StartActivity.this.dialog.show();
+            }
+        });
     }
 
-    private void handleFacebookAccessToken(AccessToken token) {
+    public void onActivityResult(int i, int i2, Intent intent) {
+        super.onActivityResult(i, i2, intent);
+        this.mCallbackManager.onActivityResult(i, i2, intent);
+    }
 
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+    /* access modifiers changed from: private */
+    public void FacebookSignIn() {
+        LoginManager.getInstance().logInWithReadPermissions((Activity) this, (Collection<String>) Arrays.asList(new String[]{"email", "public_profile"}));
+        LoginManager.getInstance().registerCallback(this.mCallbackManager, new FacebookCallback<LoginResult>() {
+            public void onSuccess(LoginResult loginResult) {
+                StartActivity.this.handleFacebookAccessToken(loginResult.getAccessToken());
+            }
 
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
+            public void onCancel() {
+                StartActivity.this.dialog.dismiss();
+            }
 
-                            String firebaseId = task.getResult().getUser().getUid();
-                            String facebookName = task.getResult().getUser().getDisplayName();
-                            String facebookEmail = task.getResult().getUser().getEmail();
-                            String facebookPhoto = task.getResult().getUser().getPhotoUrl().toString();
+            public void onError(FacebookException facebookException) {
+                StartActivity.this.dialog.dismiss();
+            }
+        });
+    }
 
-                            firebaseFirestore.collection("users")
-                                    .document(firebaseId)
-                                    .get()
-                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                            if (!task.getResult().exists()) {
-
-                                                FirestoreRegister(firebaseId, facebookName, facebookEmail, facebookPhoto);
-
-                                            } else {
-
-                                                WelcomePage();
-
-                                            }
-                                        }
-                                    });
-
-                        } else {
-
-                            dialog.dismiss();
-
-                            Toast.makeText(getApplicationContext(), "User with Email id already exists. Login with email to link this account",
-                                    Toast.LENGTH_LONG).show();
+    /* access modifiers changed from: private */
+    public void handleFacebookAccessToken(AccessToken accessToken) {
+        this.firebaseAuth.signInWithCredential(FacebookAuthProvider.getCredential(accessToken.getToken())).addOnCompleteListener((Activity) this, new OnCompleteListener<AuthResult>() {
+            public void onComplete(Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    final String uid = task.getResult().getUser().getUid();
+                    final String displayName = task.getResult().getUser().getDisplayName();
+                    final String email = task.getResult().getUser().getEmail();
+                    final String uri = task.getResult().getUser().getPhotoUrl().toString();
+                    StartActivity.this.firebaseFirestore.collection("users").document(uid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        public void onComplete(Task<DocumentSnapshot> task) {
+                            if (!task.getResult().exists()) {
+                                StartActivity.this.FirestoreRegister(uid, displayName, email, uri);
+                            } else {
+                                StartActivity.this.WelcomePage();
+                            }
                         }
-                    }
-                });
-
+                    });
+                    return;
+                }
+                StartActivity.this.dialog.dismiss();
+                Toast.makeText(StartActivity.this.getApplicationContext(), "User with Email id already exists. Login with email to link this account", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-
-    private void FirestoreRegister(String firebaseId, String userName, String userEmail, String userPhoto) {
-
-        Map<String, Object> userProfile = new HashMap<>();
-        userProfile.put("user_uid", firebaseId);
-        userProfile.put("user_email", userEmail);
-        userProfile.put("user_epass", ""); //null (IMPORTANT - DO NOT EDIT THIS FIELD)
-        userProfile.put("user_name", userName);
-        userProfile.put("user_gender", "Male"); //Dummy
-        userProfile.put("user_birthday", "01/01/1990"); //Dummy
-        userProfile.put("user_birthage", "25"); //Dummy
-        userProfile.put("user_city", "Mumbai"); //Dummy
-        userProfile.put("user_state", "Maharashtra"); //Dummy
-        userProfile.put("user_country", "India"); //Dummy
-        userProfile.put("user_location", "Bandra"); //Dummy
-        userProfile.put("user_thumb", userPhoto);
-        userProfile.put("user_image", userPhoto);
-        userProfile.put("user_cover", userPhoto);
-        userProfile.put("user_status", "offline");
-        userProfile.put("user_looking", "Man"); //Dummy
-        userProfile.put("user_about", "Hi! Everybody I am newbie here.");
-        userProfile.put("user_latitude", "19.075983"); //Dummy
-        userProfile.put("user_longitude", "72.877655"); //Dummy
-        userProfile.put("user_online", Timestamp.now());
-        userProfile.put("user_joined", Timestamp.now());
-        userProfile.put("user_verified", "yes");
-        userProfile.put("user_facebook", "yes");
-        userProfile.put("user_dummy", "yes");
-
-
-        firebaseFirestore.collection("users")
-                .document(firebaseId)
-                .set(userProfile)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-
-                            RemindPage(firebaseId);
-
-                        }
-                    }
-                });
+    /* access modifiers changed from: private */
+    public void FirestoreRegister(final String str, String str2, String str3, String str4) {
+        HashMap hashMap = new HashMap();
+        hashMap.put("user_uid", str);
+        hashMap.put("user_email", str3);
+        hashMap.put("user_epass", "");
+        hashMap.put("user_name", str2);
+        hashMap.put("user_gender", "Male");
+        hashMap.put("user_birthday", "01/01/1990");
+        hashMap.put("user_birthage", "25");
+        hashMap.put("user_city", "Mumbai");
+        hashMap.put("user_state", "Maharashtra");
+        hashMap.put("user_country", "India");
+        hashMap.put("user_location", "Bandra");
+        hashMap.put("user_thumb", str4);
+        hashMap.put("user_image", str4);
+        hashMap.put("user_cover", str4);
+        hashMap.put("user_status", "offline");
+        hashMap.put("user_looking", "Man");
+        hashMap.put("user_about", "Hi! Everybody I am newbie here.");
+        hashMap.put("user_latitude", "19.075983");
+        hashMap.put("user_longitude", "72.877655");
+        hashMap.put("user_online", Timestamp.now());
+        hashMap.put("user_joined", Timestamp.now());
+        hashMap.put("user_verified", "yes");
+        hashMap.put("user_facebook", "yes");
+        hashMap.put("user_dummy", "yes");
+        this.firebaseFirestore.collection("users").document(str).set((Map<String, Object>) hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            public void onComplete(Task<Void> task) {
+                if (task.isSuccessful()) {
+                    StartActivity.this.RemindPage(str);
+                }
+            }
+        });
     }
 
-    private void WelcomePage() {
+    /* access modifiers changed from: private */
+    public void WelcomePage() {
+        startActivity(new Intent(this, MainActivity.class));
+    }
 
-        Intent intent = new Intent(StartActivity.this, MainActivity.class);
+    /* access modifiers changed from: private */
+    public void RemindPage(String str) {
+        Intent intent = new Intent(this, RemindActivity.class);
+        intent.putExtra("user_uid", str);
         startActivity(intent);
-    }
-
-    private void RemindPage(String firebaseId) {
-
-        Intent intent = new Intent(StartActivity.this, RemindActivity.class);
-        intent.putExtra("user_uid", firebaseId);
-        startActivity(intent);
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 }

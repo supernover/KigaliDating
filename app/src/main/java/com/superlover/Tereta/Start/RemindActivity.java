@@ -1,6 +1,7 @@
 package com.superlover.Tereta.Start;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -102,6 +103,7 @@ public class RemindActivity extends AppCompatActivity implements DatePickerDialo
     }
 
     /* access modifiers changed from: protected */
+    @SuppressLint("WrongConstant")
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView((int) R.layout.remind_activity);
@@ -127,9 +129,9 @@ public class RemindActivity extends AppCompatActivity implements DatePickerDialo
         this.btnRemind.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (RemindActivity.this.radioButtonRemindGender == null) {
-                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", 0).show();
+                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", Toast.LENGTH_SHORT).show();
                 } else if (RemindActivity.this.string_city == null || RemindActivity.this.string_city.equals("city") || RemindActivity.this.string_state == null || RemindActivity.this.string_state.equals(ServerProtocol.DIALOG_PARAM_STATE) || RemindActivity.this.string_country == null || RemindActivity.this.string_country.equals(UserDataStore.COUNTRY)) {
-                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", 0).show();
+                    Toast.makeText(RemindActivity.this, "Please turn on any GPS or location service to use the app", Toast.LENGTH_SHORT).show();
                 } else {
                     String charSequence = RemindActivity.this.radioButtonRemindGender.getText().toString();
                     String charSequence2 = RemindActivity.this.textViewRemindBirthday.getText().toString();

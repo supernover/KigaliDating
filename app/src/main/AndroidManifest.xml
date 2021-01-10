@@ -60,6 +60,8 @@
         <activity android:name=".Message.MessageActivity" />
         <activity android:name=".Profile.ProfileActivity" />
         <activity android:name=".Start.ResetActivity" />
+        <activity android:name=".Legals.PolicyActivity"/>
+        <activity android:name=".Legals.TermsActivity"/>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

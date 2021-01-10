@@ -3,13 +3,18 @@ package com.superlover.Tereta.Settings;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -156,207 +161,115 @@ public class AccountActivity extends AppCompatActivity implements DatePickerDial
     }
 
 
-    private void ProfileDialogRadio(
-            final String[] dialogArray,
-            final TextView dialogTextView,
-            final String dialogUser,
-            final String dialogTitle) {
-
-        // setup the alert builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(AccountActivity.this);
-        builder.setTitle(dialogTitle);
-        //builder.setCancelable(false);
-
-        String dialogTextString = dialogTextView.getText().toString();
-        int checkedPosition = new ArrayList<String>(Arrays.asList(dialogArray)).indexOf(dialogTextString);
-
-        // add a radio button list
-        int checkedItem = checkedPosition; // cow
-        builder.setSingleChoiceItems(dialogArray, checkedItem, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-
+    /* access modifiers changed from: private */
+    public void ProfileDialogRadio(final String[] strArr, final TextView textView, final String str, String str2) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle((CharSequence) str2);
+        builder.setSingleChoiceItems((CharSequence[]) strArr, new ArrayList(Arrays.asList(strArr)).indexOf(textView.getText().toString()), (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
             }
         });
-
-        // add OK and Cancel buttons
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                int selectedWhich = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-                dialogTextView.setText(dialogArray[selectedWhich]);
-                ProfileUpdate(dialogUser, dialogArray[selectedWhich]);
+        builder.setPositiveButton((CharSequence) "Save", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                int checkedItemPosition = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+                textView.setText(strArr[checkedItemPosition]);
+                AccountActivity.this.ProfileUpdate(str, strArr[checkedItemPosition]);
             }
         });
-
-        builder.setNegativeButton("Cancel", null);
-        // create and show the alert dialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.setNegativeButton((CharSequence) "Cancel", (DialogInterface.OnClickListener) null);
+        builder.create().show();
     }
 
-
-    private void ProfileDialogInput(
-            final TextView dialogTextView,
-            final String dialogUser,
-            final String dialogTitle,
-            final int dialogLines) {
-
-        // create an alert builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(AccountActivity.this);
-        builder.setTitle(dialogTitle);
-        // builder.setCancelable(false);
-
-
-        // set the custom layout
-        final View customLayout = getLayoutInflater().inflate(R.layout.dialog_input, null);
-        builder.setView(customLayout);
-
-        EditText editTextAboutMe = customLayout.findViewById(R.id.editTextProfileEditInput);
-        editTextAboutMe.setMinLines(dialogLines);
-
-        String dialogTextString = dialogTextView.getText().toString();
-        editTextAboutMe.setText(dialogTextString);
-
-
-        // add a button
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // send data from the AlertDialog to the Activity
-
-                String stringEditTextAboutMe = editTextAboutMe.getText().toString();
-
-                if (!stringEditTextAboutMe.equals("")) {
-                    dialogTextView.setText(stringEditTextAboutMe);
-                    ProfileUpdate(dialogUser, stringEditTextAboutMe);
-                } else {
-                    Toast.makeText(AccountActivity.this,
-                            "Sorry! Could not save empty fields", Toast.LENGTH_SHORT).show();
+    /* access modifiers changed from: private */
+    public void ProfileDialogInput(final TextView textView, final String str, String str2, int i) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle((CharSequence) str2);
+        View inflate = getLayoutInflater().inflate(R.layout.dialog_input, (ViewGroup) null);
+        builder.setView(inflate);
+        final EditText editText = (EditText) inflate.findViewById(R.id.editTextProfileEditInput);
+        editText.setMinLines(i);
+        editText.setText(textView.getText().toString());
+        builder.setPositiveButton((CharSequence) "Save", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String obj = editText.getText().toString();
+                if (!obj.equals("")) {
+                    textView.setText(obj);
+                    AccountActivity.this.ProfileUpdate(str, obj);
+                    return;
                 }
-
-
+                Toast.makeText(AccountActivity.this, "Sorry! Could not save empty fields", Toast.LENGTH_SHORT).show();
             }
         });
-
-        builder.setNegativeButton("Cancel", null);
-
-        // create and show the alert dialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-
+        builder.setNegativeButton((CharSequence) "Cancel", (DialogInterface.OnClickListener) null);
+        builder.create().show();
     }
 
-
-    private void ProfileUpdate(final String user_key, final String user_value) {
-
-        final Map<String, Object> mapProfileUpdate = new HashMap<>();
-        mapProfileUpdate.put(user_key, user_value);
-
-        firebaseFirestore.collection("users")
-                .document(currentUser)
-                .update(mapProfileUpdate);
+    /* access modifiers changed from: private */
+    public void ProfileUpdate(String str, String str2) {
+        HashMap hashMap = new HashMap();
+        hashMap.put(str, str2);
+        this.firebaseFirestore.collection("users").document(this.currentUser).update(hashMap);
     }
 
-
-    @Override
-    protected void onStart() {
+    /* access modifiers changed from: protected */
+    public void onStart() {
         super.onStart();
-
-
-        firebaseFirestore.collection("users")
-                .document(currentUser)
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        if (documentSnapshot != null) {
-
-                            String user_name = documentSnapshot.getString("user_name");
-                            String user_birthday = documentSnapshot.getString("user_birthday");
-                            String user_birthage = documentSnapshot.getString("user_birthage");
-                            String user_gender = documentSnapshot.getString("user_gender");
-
-                            String user_city = documentSnapshot.getString("user_city");
-                            String user_state = documentSnapshot.getString("user_state");
-                            String user_country = documentSnapshot.getString("user_country");
-
-                            user_email = documentSnapshot.getString("user_email");
-                            user_epass = documentSnapshot.getString("user_epass");
-                            String user_mobile = documentSnapshot.getString("user_mobile");
-
-
-                            textViewAccountUserUsername.setText(user_name);
-                            textViewAccountUserBirthday.setText("(" + user_birthage + "yrs) " + user_birthday);
-                            textViewAccountUserGender.setText(user_gender);
-                            textViewAccountUserCity.setText(user_city);
-                            textViewAccountUserState.setText(user_state);
-                            textViewAccountUserCountry.setText(user_country);
-                            textViewAccountUserEmail.setText(user_email);
-                            textViewAccountUserMobile.setText(user_mobile);
-
-
-                        }
-                    }
-                });
-
+        this.firebaseFirestore.collection("users").document(this.currentUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException firebaseFirestoreException) {
+                if (documentSnapshot != null) {
+                    String string = documentSnapshot.getString("user_name");
+                    String string2 = documentSnapshot.getString("user_birthday");
+                    String string3 = documentSnapshot.getString("user_birthage");
+                    String string4 = documentSnapshot.getString("user_gender");
+                    String string5 = documentSnapshot.getString("user_city");
+                    String string6 = documentSnapshot.getString("user_state");
+                    String string7 = documentSnapshot.getString("user_country");
+                    AccountActivity.this.user_email = documentSnapshot.getString("user_email");
+                    AccountActivity.this.user_epass = documentSnapshot.getString("user_epass");
+                    String string8 = documentSnapshot.getString("user_mobile");
+                    AccountActivity.this.textViewAccountUserUsername.setText(string);
+                    TextView textView = AccountActivity.this.textViewAccountUserBirthday;
+                    textView.setText("(" + string3 + "yrs) " + string2);
+                    AccountActivity.this.textViewAccountUserGender.setText(string4);
+                    AccountActivity.this.textViewAccountUserCity.setText(string5);
+                    AccountActivity.this.textViewAccountUserState.setText(string6);
+                    AccountActivity.this.textViewAccountUserCountry.setText(string7);
+                    AccountActivity.this.textViewAccountUserEmail.setText(AccountActivity.this.user_email);
+                    AccountActivity.this.textViewAccountUserMobile.setText(string8);
+                }
+            }
+        });
     }
 
-
-    @Override
-    public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY");
-        String strDate = format.format(calendar.getTime());
-
-
-        if (year > 2000) {
-            Toast.makeText(this,
-                    "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!",
-                    Toast.LENGTH_LONG).show();
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void onDateSet(DatePicker datePicker, int i, int i2, int i3) {
+        Calendar instance = Calendar.getInstance();
+        instance.set(1, i);
+        instance.set(2, i2);
+        instance.set(5, i3);
+        String format = new SimpleDateFormat("dd-MM-YYYY").format(instance.getTime());
+        if (i > 2000) {
+            Toast.makeText(this, "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!", Toast.LENGTH_LONG).show();
         } else {
-            AgeUser(strDate);
+            AgeUser(format);
         }
-
     }
 
-
-    private void AgeUser(String stringDateUser) {
-
-        String[] arrayDateUser = stringDateUser.split("-");
-        int day = Integer.valueOf(arrayDateUser[0]);
-        int month = Integer.valueOf(arrayDateUser[1]);
-        int year = Integer.valueOf(arrayDateUser[2]);
-
-
-        Calendar dob = Calendar.getInstance();
-        Calendar today = Calendar.getInstance();
-
-        dob.set(year, month, day);
-
-        int age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
-
-        if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
-            age--;
+    private void AgeUser(String str) {
+        String[] split = str.split("-");
+        int intValue = Integer.valueOf(split[0]).intValue();
+        int intValue2 = Integer.valueOf(split[1]).intValue();
+        int intValue3 = Integer.valueOf(split[2]).intValue();
+        Calendar instance = Calendar.getInstance();
+        Calendar instance2 = Calendar.getInstance();
+        instance.set(intValue3, intValue2, intValue);
+        int i = instance2.get(1) - instance.get(1);
+        if (instance2.get(6) < instance.get(6)) {
+            i--;
         }
-
-        Integer ageInt = new Integer(age);
-        String ageS = ageInt.toString();
-
-        String finalString = "(" + ageS + "yrs) " + stringDateUser;
-
-        textViewAccountUserBirthday.setText(finalString);
-
-        ProfileUpdate("user_birthday", stringDateUser);
-
-        ProfileUpdate("user_birthage", ageS);
-
+        String num = new Integer(i).toString();
+        this.textViewAccountUserBirthday.setText("(" + num + "yrs) " + str);
+        ProfileUpdate("user_birthday", str);
+        ProfileUpdate("user_birthage", num);
     }
 }

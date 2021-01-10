@@ -30,12 +30,15 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -254,7 +257,7 @@ public class RegisterActivity extends AppCompatActivity implements DatePickerDia
         instance.set(2, i2);
         instance.set(5, i3);
         String format = new SimpleDateFormat("dd-MM-yyyy").format(instance.getTime());
-        if (i > 2002) {
+        if (i > 2000) {
             Toast.makeText(this, "Sorry! you dont meet our user registration minimum age limits policy now. Please register with us after some time. Thank you for trying our app now!", Toast.LENGTH_LONG).show();
             this.textViewRegisterBirthday.setText("");
             return;
@@ -463,5 +466,3 @@ public class RegisterActivity extends AppCompatActivity implements DatePickerDia
 
 
 }
-
-
